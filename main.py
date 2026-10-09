@@ -1,44 +1,15 @@
+import tensorflow as tf
+from tensorflow.keras.datasets import mnist
 import numpy as np
-from PIL import Image
+import matplotlib as plt
 import time
-import requests
-import urllib
-import matplotlib
-import gzip
-import pickle
-import sys
-import os
-#eeee
-#start
-time_start = time.perf_counter()
-data_sources = {
-    "training_images": "train-images-idx3-ubyte.gz",  # 60,000 training images.
-    "test_images": "t10k-images-idx3-ubyte.gz",  # 10,000 test images.
-    "training_labels": "train-labels-idx1-ubyte.gz",  # 60,000 training labels.
-    "test_labels": "t10k-labels-idx1-ubyte.gz",  # 10,000 test labels.
-}
+#start timer
+start = time.perf_counter()
 
-data_dir = "./_data"
-os.makedirs(data_dir, exist_ok=True)
+#training data
+mnist = tf.keras.datasets.mnist
+(X_train, y_train),(X_test, y_test) + mnist.load_data()
 
-base_url = "https://ossci-datasets.s3.amazonaws.com/mnist/"
-
-for fname in data_sources.values():
-    fpath = os.path.join(data_dir, fname)
-    if not os.path.exists(fpath):
-        print("Downloading file: " + fname)
-        resp = requests.get(base_url + fname, stream=True, timeout=10)
-        resp.raise_for_status()
-        with open(fpath, "wb") as fh:
-            for chunk in resp.iter_content(chunk_size=128):
-                fh.write(chunk)
-
-
-
-
-
-
-#stop
-end_time = time.perf_counter()
-
-print(f"Code execution took: {end_time - time_start:.4f} seconds")
+#end timer
+end = time.perf_counter()
+print(f"Code execution took : {end-start:.4f} seconds")
