@@ -33,21 +33,32 @@ class Activation_ReLU:
         #deletes all nums under 0
         self.output = np.maximum(0, inputs)
 
+class Activation_Softmax:
+    def forward(self,inputs):
+        #e raised by all values from last output - e raised to highest value from last output
+        #axis=1 calculates the rows instead of default None (coloums)
+        exp_values = np.exp(inputs - np.max(inputs, axis=1, keepdims=True))
+        probabilities = exp_values / np.sum(exp_values, axis=1, keepdims=True)
+        self.output = probabilities
+
 
 (X_train,y_train),(X_test,y_test) = get_data()
 X_train_normalized = normalize_data(X_train)
 X_train_flattened = shape2_1(X_train_normalized) 
 
-#initialize first layer
 layer1 = Layer_Dense(784, 64)
-#initialize second layer
 activation1 = Activation_ReLU()
-#move data to next hidden-layer
-layer1.forward(X_train_flattened[0])
-#move data to next hidden-layer
-activation1.forward(layer1.output)
-print(activation1.output)
 
+layer2 = Layer_Dense(64,10)
+activation2 = Activation_Softmax()
+
+layer1.forward(X_train_flattened[0])
+activation1.forward(layer1.output)
+
+layer2.forward(activation1.output)
+activation2.forward(layer2.output)
+
+#print(activation2.output)
 
 
 
@@ -58,8 +69,7 @@ print(activation1.output)
 #print(X_train_flattened[0].sum())
 #plt.imshow(X_train[0], cmap = "gray")
 #plt.show()
+
 #end timer
-
-
 end = time.perf_counter()
 print(f"Code execution took : {end-start:.4f} seconds")
