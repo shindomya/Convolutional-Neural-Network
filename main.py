@@ -41,6 +41,16 @@ class Activation_Softmax:
         probabilities = exp_values / np.sum(exp_values, axis=1, keepdims=True)
         self.output = probabilities
 
+class Loss_CategoricalCrossentropy:
+    def calculate(self,y_pred,y_solution):
+        #number of poss answers
+        samples = len(y_pred)
+        #0 log error / set limits
+        #1e = 10**
+        y_pred_clipped = np.clip(y_pred, 1e-7, 1-1e-7)
+        correct_confidences = y_pred_clipped[range(samples),y_solution]
+        neg_log = -np.log(correct_confidences)
+        return np.mean(neg_log)
 
 (X_train,y_train),(X_test,y_test) = get_data()
 X_train_normalized = normalize_data(X_train)
@@ -52,11 +62,15 @@ activation1 = Activation_ReLU()
 layer2 = Layer_Dense(64,10)
 activation2 = Activation_Softmax()
 
-layer1.forward(X_train_flattened[0])
+layer1.forward(X_train_flattened)
 activation1.forward(layer1.output)
 
 layer2.forward(activation1.output)
 activation2.forward(layer2.output)
+
+loss1 = Loss_CategoricalCrossentropy()
+print(loss1.calculate(layer2.output[0:1],y_train[0]))
+
 
 #print(activation2.output)
 
