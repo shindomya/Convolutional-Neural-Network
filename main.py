@@ -30,6 +30,7 @@ class Layer_Dense:
 
 class Activation_ReLU:
     def forward(self,inputs):
+        #deletes all nums under 0
         self.output = np.maximum(0, inputs)
 
 
@@ -39,9 +40,14 @@ X_train_flattened = shape2_1(X_train_normalized)
 
 #initialize first layer
 layer1 = Layer_Dense(784, 64)
-#move data to next layer
+#initialize second layer
+activation1 = Activation_ReLU()
+#move data to next hidden-layer
 layer1.forward(X_train_flattened[0])
-print(layer1.output)
+#move data to next hidden-layer
+activation1.forward(layer1.output)
+print(activation1.output)
+
 
 
 
