@@ -28,6 +28,10 @@ class Layer_Dense:
     def forward(self,inputs):
         self.output = np.dot(inputs, self.weights) + self.biases
 
+class Activation_ReLU:
+    def forward(self,inputs):
+        self.output = np.maximum(0, inputs)
+
 
 (X_train,y_train),(X_test,y_test) = get_data()
 X_train_normalized = normalize_data(X_train)
