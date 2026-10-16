@@ -62,15 +62,18 @@ activation1 = Activation_ReLU()
 layer2 = Layer_Dense(64,10)
 activation2 = Activation_Softmax()
 
-layer1.forward(X_train_flattened)
-activation1.forward(layer1.output)
+i = 0
+for epoche in range(60000//32):
+    layer1.forward(X_train_flattened[i:i+32])
+    activation1.forward(layer1.output)
 
-layer2.forward(activation1.output)
-activation2.forward(layer2.output)
+    layer2.forward(activation1.output)
+    activation2.forward(layer2.output)
 
-loss1 = Loss_CategoricalCrossentropy()
-print(loss1.calculate(layer2.output[0:1],y_train[0]))
-
+    cce = Loss_CategoricalCrossentropy()
+    loss = cce.calculate(layer2.output,y_train[i:i+32])
+    print(f"Loss {i} - {i+32}: {loss}")
+    i += 32
 
 #print(activation2.output)
 
