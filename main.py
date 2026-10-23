@@ -51,6 +51,8 @@ class Loss_CategoricalCrossentropy:
         correct_confidences = y_pred_clipped[range(samples),y_solution]
         neg_log = -np.log(correct_confidences)
         return np.mean(neg_log)
+    def gradiant(self,
+
 
 (X_train,y_train),(X_test,y_test) = get_data()
 X_train_normalized = normalize_data(X_train)
@@ -71,8 +73,10 @@ for epoche in range(60000//32):
     activation2.forward(layer2.output)
 
     cce = Loss_CategoricalCrossentropy()
-    loss = cce.calculate(layer2.output,y_train[i:i+32])
+    loss = cce.calculate(activation2.output,y_train[i:i+32])
     print(f"Loss {i} - {i+32}: {loss}")
+    
+
     i += 32
 
 #print(activation2.output)
