@@ -26,7 +26,13 @@ class Layer_Dense:
         self.weights = 0.1 * np.random.randn(n_inputs, n_neurons)
         self.biases = np.zeros((1, n_neurons))
     def forward(self,inputs):
+        self.inputs = inputs
         self.output = np.dot(inputs, self.weights) + self.biases
+    def backward(self,inputs,dvalues):
+        self.dweights = np.dot(self.inputs.T, dvalues)
+
+        
+
 
 class Activation_ReLU:
     def forward(self,inputs):
@@ -51,7 +57,15 @@ class Loss_CategoricalCrossentropy:
         correct_confidences = y_pred_clipped[range(samples),y_solution]
         neg_log = -np.log(correct_confidences)
         return np.mean(neg_log)
-    def gradiant(self,
+    def one_hot_matrix(self,labels):
+        #initialize a matrix with 0 only
+        clean_matrix = np.zeros((len(labels),10))
+        #put the correct answers into the matrix (1=answer,0=everything else)
+        clean_matrix[np.arange(len(labels)), labels] = 1
+        return clean_matrix
+    def backward(self,output_value,clean_matrix,division):
+        dvalue = (output_value - clean_matrix) / division
+        return dvalue
 
 
 (X_train,y_train),(X_test,y_test) = get_data()
@@ -64,6 +78,9 @@ activation1 = Activation_ReLU()
 layer2 = Layer_Dense(64,10)
 activation2 = Activation_Softmax()
 
+cce = Loss_CategoricalCrossentropy()
+
+
 i = 0
 for epoche in range(60000//32):
     layer1.forward(X_train_flattened[i:i+32])
@@ -72,11 +89,16 @@ for epoche in range(60000//32):
     layer2.forward(activation1.output)
     activation2.forward(layer2.output)
 
-    cce = Loss_CategoricalCrossentropy()
     loss = cce.calculate(activation2.output,y_train[i:i+32])
-    print(f"Loss {i} - {i+32}: {loss}")
+    matrix_solution = cce.one_hot_matrix(y_train[i:i+32])
     
+    dvalues = cce.backward(activation2.output,matrix_solution,32)
 
+    print(f"Loss {i} - {i+32}: {loss}")
+    print(f"Correct solution: {i} - {i+32}: {matrix_solution}")
+    print(f"dvalues: {i} - {i+32}:") 
+    print(f"{dvalues}")
+    
     i += 32
 
 #print(activation2.output)
