@@ -3,6 +3,7 @@ from tensorflow.keras.datasets import mnist
 import numpy as np
 import matplotlib.pyplot as plt
 import time
+import os
 
 #start timer
 start = time.perf_counter()
@@ -28,16 +29,23 @@ class Layer_Dense:
     def forward(self,inputs):
         self.inputs = inputs
         self.output = np.dot(inputs, self.weights) + self.biases
-    def backward(self,inputs,dvalues):
+    def backward(self,dvalues):
         self.dweights = np.dot(self.inputs.T, dvalues)
+        self.dbiases = np.sum(dvalues, axis=0, keepdims=True)
+        self.dinputs = np.dot(dvalues, self.weights.T)
 
         
-
-
 class Activation_ReLU:
     def forward(self,inputs):
+        self.inputs = inputs
         #deletes all nums under 0
         self.output = np.maximum(0, inputs)
+    def backward(self,dvalues):
+        self.dinputs = dvalues.copy()
+        self.dinputs[self.inputs <=0] = 0
+
+        
+        
 
 class Activation_Softmax:
     def forward(self,inputs):
@@ -81,25 +89,48 @@ activation2 = Activation_Softmax()
 cce = Loss_CategoricalCrossentropy()
 
 
-i = 0
-for epoche in range(60000//32):
-    layer1.forward(X_train_flattened[i:i+32])
-    activation1.forward(layer1.output)
+if os.path.exists("mnist_weights.npz"):
+    saved = np.load("mnist_weights.npz")
 
-    layer2.forward(activation1.output)
-    activation2.forward(layer2.output)
+    layer1.weights = saved["weights1"]
+    layer1.biases = saved["biases1"]
 
-    loss = cce.calculate(activation2.output,y_train[i:i+32])
-    matrix_solution = cce.one_hot_matrix(y_train[i:i+32])
+    layer2.weights = saved["weights2"]
+    layer2.biases = saved["biases2"]
+
+learning_rate = 0.01
+for epoche in range(50): 
+    for i in range(0, len(X_train_flattened), 32):
+        layer1.forward(X_train_flattened[i:i+32])
+        activation1.forward(layer1.output)
+
+        layer2.forward(activation1.output)
+        activation2.forward(layer2.output)
+
+        loss = cce.calculate(activation2.output,y_train[i:i+32])
+        matrix_solution = cce.one_hot_matrix(y_train[i:i+32])
     
-    dvalues = cce.backward(activation2.output,matrix_solution,32)
-
-    print(f"Loss {i} - {i+32}: {loss}")
-    print(f"Correct solution: {i} - {i+32}: {matrix_solution}")
-    print(f"dvalues: {i} - {i+32}:") 
-    print(f"{dvalues}")
+        dvalues = cce.backward(activation2.output,matrix_solution,32)
     
-    i += 32
+        layer2.backward(dvalues)
+        activation1.backward(layer2.dinputs)
+        layer1.backward(activation1.dinputs)
+
+        layer1.weights -= learning_rate * layer1.dweights
+        layer1.biases -= learning_rate * layer1.dbiases
+
+        layer2.weights -= learning_rate * layer2.dweights
+        layer2.biases -= learning_rate * layer2.dbiases
+    print(f"loss {epoche}: {loss}")
+    np.savez(
+            "mnist_weights.npz",
+            weights1 = layer1.weights,
+            biases1 = layer1.biases,
+            weights2 = layer2.weights,
+            biases2 = layer2.biases
+            )
+        
+       
 
 #print(activation2.output)
 
