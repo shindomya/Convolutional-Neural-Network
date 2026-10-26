@@ -1,6 +1,6 @@
 # FeedForward Neural Network
 
-A lightweight FeedForward Neural Network implemented from scratch to recognize handwritten digits using the MNIST dataset. It comes with pre-trained weights so you can test it immediately.
+A FeedForward neural network I built for school which uses the MNIST data set to recognize numbers drawn on a 28*28 background.
 
 ## Features & Components
 
@@ -8,8 +8,6 @@ A lightweight FeedForward Neural Network implemented from scratch to recognize h
 * **train.py:** Trains the network from scratch and exports the optimized weights and biases.
 * **test.py:** Picks a random image from the dataset and predicts the digit.
 * **complete_test.py:** Runs an evaluation across all 10,000 test cases and outputs the overall accuracy.
-
-## Quick Start
 
 ### Run a Single Test
 To pick a random image and see the network's prediction:
